@@ -7,7 +7,7 @@
 multiscrape:
   - name: energyua_22
     resource_template: "https://kyiv.energy-ua.info/cherga/2-2?_={{ now().timestamp()|int }}"       # посилання можна змінити на свою чергу
-    scan_interval: 600
+    scan_interval: 3600
     headers:
       Referer: https://kyiv.energy-ua.info/
       User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) HomeAssistant
