@@ -1,8 +1,6 @@
 # ⚡️ Home Assistant — EnergyUA Outages Parser (Kyiv, Черга 2-2)
 [![release](https://img.shields.io/github/v/release/rodion981/homeassistant-yasno-outages?display_name=tag&sort=semver)](https://github.com/rodion981/homeassistant-yasno-outages/releases)
-![downloads](https://img.shields.io/github/downloads/rodionkurilenko/homeassistant-yasno-outages/total?color=brightgreen&label=downloads)
 ![hacs](https://img.shields.io/badge/hacs-default-blue)
-![sponsors](https://img.shields.io/github/sponsors/rodionkurilenko?label=sponsors)
 [![patreon](https://img.shields.io/badge/support-patreon-ff424d)](https://www.patreon.com/c/Rodion_Kurylenko)
 [![twitter](https://img.shields.io/badge/twitter-@rodionkurilenko-1DA1F2)](https://twitter.com/rodion_kr)
 
