@@ -3,9 +3,8 @@
 ![downloads](https://img.shields.io/github/downloads/rodionkurilenko/homeassistant-yasno-outages/total?color=brightgreen&label=downloads)
 ![hacs](https://img.shields.io/badge/hacs-default-blue)
 ![sponsors](https://img.shields.io/github/sponsors/rodionkurilenko?label=sponsors)
-[![patreon](https://img.shields.io/badge/support-patreon-ff424d)](https://patreon.com/rodionkurilenko)
-[![buymeacoffee](https://img.shields.io/badge/support-buymeacoffee-yellow)](https://buymeacoffee.com/rodionkurilenko)
-[![twitter](https://img.shields.io/badge/twitter-@rodionkurilenko-1DA1F2)](https://twitter.com/rodionkurilenko)
+[![patreon](https://img.shields.io/badge/support-patreon-ff424d)](https://www.patreon.com/c/Rodion_Kurylenko)
+[![twitter](https://img.shields.io/badge/twitter-@rodionkurilenko-1DA1F2)](https://twitter.com/rodion_kr)
 
 Пакет для Home Assistant, що парсить графік відключень із
 [kyiv.energy-ua.info/cherga/2-2](https://kyiv.energy-ua.info/cherga/2-2) і створює сенсори:
