@@ -1,11 +1,11 @@
-# ⚡️ Home Assistant — EnergyUA Outages Parser (Kyiv, Черга 2-2)
+# ⚡️ Home Assistant — Alerts Energy Outages (Kyiv, черга 2.2)
 [![release](https://img.shields.io/github/v/release/rodion981/homeassistant-yasno-outages?display_name=tag&sort=semver)](https://github.com/rodion981/homeassistant-yasno-outages/releases)
 ![hacs](https://img.shields.io/badge/hacs-default-blue)
 [![patreon](https://img.shields.io/badge/support-patreon-ff424d)](https://www.patreon.com/c/Rodion_Kurylenko)
 [![twitter](https://img.shields.io/badge/twitter-@rodionkurilenko-1DA1F2)](https://twitter.com/rodion_kr)
 
-Пакет для Home Assistant, що парсить графік відключень із
-[kyiv.energy-ua.info/cherga/2-2](https://kyiv.energy-ua.info/cherga/2-2) і створює сенсори:
+Пакет для Home Assistant, що отримує графік відключень із
+[alerts.energy/kyiv](https://alerts.energy/kyiv) і створює сенсори:
 - «сьогодні» та «завтра» (до 2 періодів на добу - можна збільшити за потреби, якщо на добу буде більше відключень),
 - стислий текст `*_brief`,
 - бінарний сенсор «відключення зараз»,
@@ -13,7 +13,7 @@
 
 МОЖНА ЗМІНИТИ ЧЕРГУ НА ВАШУ!!!
 
-> Працює через інтеграцію [`multiscrape`](https://github.com/danieldotnl/ha-multiscrape).
+> Працює через вбудовану REST-інтеграцію Home Assistant; HACS-залежності більше не потрібні.
 
 ## 🔧 Встановлення
 1. Скопіюйте файл пакету до вашого HA:
@@ -41,17 +41,17 @@ entities:
 ```
 
 ## 🧠 Як це працює
-- **Multiscrape** тягне HTML та парсить секції «на сьогодні/на завтра».
-- **Template-сенсори** формують таймстемпи. Для «завтра» доданий анти‑залипання механізм:
-  `sensor.energyua_22_tomorrow_fresh` → True тільки коли з'явилися **нові** завтрашні дані,
-  які **не збігаються** з сьогоднішніми.
+- **REST sensor** отримує JSON з `alerts.energy` і вибирає оператора `kyiv_oblenergo` та чергу `2.2`.
+- Коди `0–3` перетворюються на періоди з точністю до 30 хвилин.
+- **Template-сенсори** формують таймстемпи. `sensor.energyua_22_tomorrow_fresh`
+  стає `True`, коли API віддає хоча б один період відключення на завтра.
 - Автоматизації:
   - сповіщення, коли **з'явився графік на завтра**;
  
 
 ## 🧩 Залежності
 - Home Assistant ≥ 2024.6
-- HACS або вручну: `multiscrape`
+- Додаткових інтеграцій чи HACS-пакетів не потрібно
 
 ## 👤 Автор
 - Made with ❤️ в Україні.

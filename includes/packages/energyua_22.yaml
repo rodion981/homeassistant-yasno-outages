@@ -1,188 +1,143 @@
 ############################################
 # includes/packages/energyua_22.yaml
-# Графік відключень (Черга 2-2): парсинг + сенсори
+# Alerts Energy: Київ, ДТЕК, черга 2.2
 ############################################
 
-# 1) MULTISCRAPE: тягнемо сирі тексти (з анти-кешем)
-multiscrape:
-  - name: energyua_22
-    resource_template: "https://kyiv.energy-ua.info/cherga/2-2?_={{ now().timestamp()|int }}"
+# Значення годин у API:
+# 0 — світло є; 1 — немає всю годину;
+# 2 — немає перші 30 хв; 3 — немає другі 30 хв.
+rest:
+  - resource: "https://alerts.energy/api/v1/source-registry/areas/kyiv/shutdowns"
     scan_interval: 60
+    timeout: 30
     headers:
-      Referer: https://kyiv.energy-ua.info/
-      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) HomeAssistant
-      Accept-Language: uk-UA,uk;q=0.9
+      Referer: https://alerts.energy/kyiv
+      User-Agent: Mozilla/5.0 (Home Assistant; alerts.energy schedule)
+      Accept: application/json
     sensor:
-      ######################################################
-      # СЬОГОДНІ
-      ######################################################
-      - name: energyua_22_today_slot1_start_text
-        select: "body"
+      - name: energyua_22_today_hours
+        unique_id: energyua_22_today_hours
         value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[0][0] if p|length>=1 else '' }}
-
-      - name: energyua_22_today_slot1_end_text
-        select: "body"
+          {% set rows = value_json
+            | selectattr('initiator', 'eq', 'kyiv_oblenergo')
+            | selectattr('queue', 'eq', '2.2') | list %}
+          {{ (rows[0].today if rows else []) | to_json }}
+      - name: energyua_22_tomorrow_hours
+        unique_id: energyua_22_tomorrow_hours
         value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[0][1] if p|length>=1 else '' }}
-
-      - name: energyua_22_today_slot1_duration_h_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {# Сайт пише "тривалість 4:30 год. год." - зберігаємо як сирий текст, але більше не покладаємось на нього #}
-          {% set d = sec | regex_findall(
-            '[Тт]ривалість\\s*(\\d{1,2})(?::(\\d{2}))?\\s*год'
-          ) %}
-          {% if d|length>=1 %}
-            {{ d[0][0] ~ (':' ~ d[0][1] if d[0][1] else '') }}
-          {% endif %}
-        unit_of_measurement: "год"
-
-      - name: energyua_22_today_slot2_start_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[1][0] if p|length>=2 else '' }}
-
-      - name: energyua_22_today_slot2_end_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[1][1] if p|length>=2 else '' }}
-
-      - name: energyua_22_today_slot2_duration_h_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на сьогодні\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення завтра|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set d = sec | regex_findall(
-            '[Тт]ривалість\\s*(\\d{1,2})(?::(\\d{2}))?\\s*год'
-          ) %}
-          {% if d|length>=2 %}
-            {{ d[1][0] ~ (':' ~ d[1][1] if d[1][1] else '') }}
-          {% endif %}
-        unit_of_measurement: "год"
-
-      ######################################################
-      # ЗАВТРА
-      # Якщо реального "Періоди відключень на завтра" нема,
-      # ці значення будуть пусті
-      ######################################################
-      - name: energyua_22_tomorrow_slot1_start_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[0][0] if p|length>=1 else '' }}
-
-      - name: energyua_22_tomorrow_slot1_end_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[0][1] if p|length>=1 else '' }}
-
-      - name: energyua_22_tomorrow_slot1_duration_h_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set d = sec | regex_findall(
-            '[Тт]ривалість\\s*(\\d{1,2})(?::(\\d{2}))?\\s*год'
-          ) %}
-          {% if d|length>=1 %}
-            {{ d[0][0] ~ (':' ~ d[0][1] if d[0][1] else '') }}
-          {% endif %}
-        unit_of_measurement: "год"
-
-      - name: energyua_22_tomorrow_slot2_start_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[1][0] if p|length>=2 else '' }}
-
-      - name: energyua_22_tomorrow_slot2_end_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set p = sec | regex_findall(
-            '[Зз]\\s*(\\d{1,2}[:.]\\d{2})\\s*до\\s*(\\d{1,2}[:.]\\d{2})'
-          ) %}
-          {{ p[1][1] if p|length>=2 else '' }}
-
-      - name: energyua_22_tomorrow_slot2_duration_h_text
-        select: "body"
-        value_template: >-
-          {% set m = value | regex_findall(
-            'Періоди відключень на завтра\\s*([\\s\\S]*?)(?=Позначення до графіка|Відключення|$)'
-          ) %}
-          {% set sec = m[0] if m else '' %}
-          {% set d = sec | regex_findall(
-            '[Тт]ривалість\\s*(\\d{1,2})(?::(\\d{2}))?\\s*год'
-          ) %}
-          {% if d|length>=2 %}
-            {{ d[1][0] ~ (':' ~ d[1][1] if d[1][1] else '') }}
-          {% endif %}
-        unit_of_measurement: "год"
+          {% set rows = value_json
+            | selectattr('initiator', 'eq', 'kyiv_oblenergo')
+            | selectattr('queue', 'eq', '2.2') | list %}
+          {{ (rows[0].tomorrow if rows else []) | to_json }}
 
 
 # 2) TEMPLATE-СЕНСОРИ
 sensor:
   - platform: template
     sensors:
+      # Перетворення 24 погодинних кодів alerts.energy на перші два
+      # суцільні періоди відключення з точністю до 30 хвилин.
+      energyua_22_today_slot1_start_text:
+        friendly_name: "Сьогодні: початок 1-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_today_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}
+            {% if on and ns.start is none %}{% set ns.start = loop.index0 %}
+            {% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}
+          {% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 0 %}{{ '%02d:%02d' | format(ns.periods[0][0] // 2, (ns.periods[0][0] % 2) * 30) }}{% endif %}
+
+      energyua_22_today_slot1_end_text:
+        friendly_name: "Сьогодні: кінець 1-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_today_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 0 %}{{ '%02d:%02d' | format(ns.periods[0][1] // 2, (ns.periods[0][1] % 2) * 30) }}{% endif %}
+
+      energyua_22_today_slot2_start_text:
+        friendly_name: "Сьогодні: початок 2-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_today_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 1 %}{{ '%02d:%02d' | format(ns.periods[1][0] // 2, (ns.periods[1][0] % 2) * 30) }}{% endif %}
+
+      energyua_22_today_slot2_end_text:
+        friendly_name: "Сьогодні: кінець 2-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_today_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 1 %}{{ '%02d:%02d' | format(ns.periods[1][1] // 2, (ns.periods[1][1] % 2) * 30) }}{% endif %}
+
+      energyua_22_tomorrow_slot1_start_text:
+        friendly_name: "Завтра: початок 1-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_tomorrow_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 0 %}{{ '%02d:%02d' | format(ns.periods[0][0] // 2, (ns.periods[0][0] % 2) * 30) }}{% endif %}
+
+      energyua_22_tomorrow_slot1_end_text:
+        friendly_name: "Завтра: кінець 1-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_tomorrow_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 0 %}{{ '%02d:%02d' | format(ns.periods[0][1] // 2, (ns.periods[0][1] % 2) * 30) }}{% endif %}
+
+      energyua_22_tomorrow_slot2_start_text:
+        friendly_name: "Завтра: початок 2-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_tomorrow_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 1 %}{{ '%02d:%02d' | format(ns.periods[1][0] // 2, (ns.periods[1][0] % 2) * 30) }}{% endif %}
+
+      energyua_22_tomorrow_slot2_end_text:
+        friendly_name: "Завтра: кінець 2-го періоду (текст)"
+        value_template: >-
+          {% set hours = states('sensor.energyua_22_tomorrow_hours') | from_json([]) %}
+          {% set ns = namespace(bits=[], periods=[], start=none) %}
+          {% for v in hours %}{% set ns.bits = ns.bits + [v in [1,2], v in [1,3]] %}{% endfor %}
+          {% for on in ns.bits %}{% if on and ns.start is none %}{% set ns.start = loop.index0 %}{% elif not on and ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, loop.index0]] %}{% set ns.start = none %}{% endif %}{% endfor %}
+          {% if ns.start is not none %}{% set ns.periods = ns.periods + [[ns.start, 48]] %}{% endif %}
+          {% if ns.periods | length > 1 %}{{ '%02d:%02d' | format(ns.periods[1][1] // 2, (ns.periods[1][1] % 2) * 30) }}{% endif %}
+
+      # Сумісність зі старими entity ID сирих тривалостей.
+      energyua_22_today_slot1_duration_h_text:
+        friendly_name: "Сьогодні: тривалість 1-го (текст)"
+        unit_of_measurement: "год"
+        value_template: "{{ states('sensor.energyua_22_today_slot1_duration_h') }}"
+      energyua_22_today_slot2_duration_h_text:
+        friendly_name: "Сьогодні: тривалість 2-го (текст)"
+        unit_of_measurement: "год"
+        value_template: "{{ states('sensor.energyua_22_today_slot2_duration_h') }}"
+      energyua_22_tomorrow_slot1_duration_h_text:
+        friendly_name: "Завтра: тривалість 1-го (текст)"
+        unit_of_measurement: "год"
+        value_template: "{{ states('sensor.energyua_22_tomorrow_slot1_duration_h') }}"
+      energyua_22_tomorrow_slot2_duration_h_text:
+        friendly_name: "Завтра: тривалість 2-го (текст)"
+        unit_of_measurement: "год"
+        value_template: "{{ states('sensor.energyua_22_tomorrow_slot2_duration_h') }}"
+
       # ---- прапорець "є валідні часи на завтра"
       energyua_22_tomorrow_fresh:
         friendly_name: "Завтра: дані свіжі"
@@ -206,7 +161,9 @@ sensor:
         device_class: timestamp
         value_template: >-
           {% set t = states('sensor.energyua_22_today_slot1_end_text')|trim %}
-          {% if t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
+          {% if t == '24:00' %}
+            {{ today_at('00:00:00') + timedelta(days=1) }}
+          {% elif t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
             {{ today_at((t if ':' in t else t|replace('.',':')) ~ ':00') }}
           {% endif %}
 
@@ -238,7 +195,9 @@ sensor:
         device_class: timestamp
         value_template: >-
           {% set t = states('sensor.energyua_22_today_slot2_end_text')|trim %}
-          {% if t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
+          {% if t == '24:00' %}
+            {{ today_at('00:00:00') + timedelta(days=1) }}
+          {% elif t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
             {{ today_at((t if ':' in t else t|replace('.',':')) ~ ':00') }}
           {% endif %}
 
@@ -271,7 +230,9 @@ sensor:
         availability_template: "{{ is_state('sensor.energyua_22_tomorrow_fresh','True') }}"
         value_template: >-
           {% set t = states('sensor.energyua_22_tomorrow_slot1_end_text')|trim %}
-          {% if t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
+          {% if t == '24:00' %}
+            {{ today_at('00:00:00') + timedelta(days=2) }}
+          {% elif t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
             {{ today_at((t if ':' in t else t|replace('.',':')) ~ ':00') + timedelta(days=1) }}
           {% endif %}
 
@@ -304,7 +265,9 @@ sensor:
         availability_template: "{{ is_state('sensor.energyua_22_tomorrow_fresh','True') }}"
         value_template: >-
           {% set t = states('sensor.energyua_22_tomorrow_slot2_end_text')|trim %}
-          {% if t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
+          {% if t == '24:00' %}
+            {{ today_at('00:00:00') + timedelta(days=2) }}
+          {% elif t and t|regex_match('^\\d{1,2}[:.]\\d{2}$') %}
             {{ today_at((t if ':' in t else t|replace('.',':')) ~ ':00') + timedelta(days=1) }}
           {% endif %}
 
@@ -403,13 +366,13 @@ binary_sensor:
             (states('sensor.energyua_22_today_slot1_start'), states('sensor.energyua_22_today_slot1_end')),
             (states('sensor.energyua_22_today_slot2_start'), states('sensor.energyua_22_today_slot2_end'))
           ] %}
-          {% set on = false %}
+          {% set ns = namespace(on=false) %}
           {% for s,e in pairs %}
             {% if s not in bad and e not in bad and as_datetime(s) and as_datetime(e)
                   and nowt >= as_datetime(s) and nowt < as_datetime(e) %}
-              {% set on = true %}
+              {% set ns.on = true %}
             {% endif %}
           {% endfor %}
-          {{ on }}
+          {{ ns.on }}
         icon_template: >-
           {{ 'mdi:power-plug-off' if is_state('binary_sensor.energyua_22_outage_now','on') else 'mdi:power-plug' }}
