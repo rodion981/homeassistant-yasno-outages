@@ -60,3 +60,4 @@ class AlertsEnergyOutageNow(
             start <= boundary < end
             for start, end in outage_periods(self.coordinator.data["today"])
         )
+

@@ -23,6 +23,17 @@
 
 Інтеграція створює сенсори графіка на сьогодні/завтра та бінарний сенсор «Відключення зараз». В атрибутах доступні сирі 24 коди та всі знайдені періоди.
 
+### Перехід з v2.0.x на v2.1.0
+
+Версії `v2.0.1–v2.0.2` помилково використовували domain `yasno_outages`, який належить інтеграції [denysdovhan/ha-yasno-outages](https://github.com/denysdovhan/ha-yasno-outages). У `v2.1.0` domain змінено на `alerts_energy_outages`.
+
+Якщо була встановлена `v2.0.x`:
+
+1. видаліть config entry **Alerts Energy** зі сторінки Devices & services;
+2. видаліть стару версію **Alerts Energy Outages** у HACS і перезапустіть Home Assistant;
+3. встановіть `v2.1.0` з HACS, ще раз перезапустіть Home Assistant і додайте **Alerts Energy Outages** заново;
+4. якщо використовуєте `ha-yasno-outages`, перевстановіть її в HACS, щоб відновити папку `custom_components/yasno_outages`.
+
 ## 🧩 Legacy YAML-пакет
 
 Для старої схеми встановлення можна скопіювати файл пакету вручну:

@@ -1,5 +1,5 @@
 {
-  "domain": "yasno_outages",
+  "domain": "alerts_energy_outages",
   "name": "Alerts Energy Outages",
   "codeowners": ["@rodion981"],
   "config_flow": true,
@@ -7,5 +7,6 @@
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/rodion981/homeassistant-yasno-outages/issues",
-  "version": "2.0.2"
+  "version": "2.1.0"
 }
+

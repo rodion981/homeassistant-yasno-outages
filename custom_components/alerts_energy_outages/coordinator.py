@@ -73,3 +73,4 @@ class AlertsEnergyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return await self._api.async_get_schedule(self._operator, self._queue)
         except AlertsEnergyApiError as err:
             raise UpdateFailed(str(err)) from err
+

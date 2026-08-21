@@ -55,3 +55,4 @@ class AlertsEnergyApi:
             if not isinstance(row.get(day), list) or len(row[day]) != 24:
                 raise AlertsEnergyApiError(f"Invalid {day} schedule")
         return row
+

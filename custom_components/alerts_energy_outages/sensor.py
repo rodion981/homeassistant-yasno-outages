@@ -100,3 +100,4 @@ class AlertsEnergySensor(
                 for start, end in outage_periods(hours)
             ],
         }
+
