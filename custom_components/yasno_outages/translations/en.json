@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alerts Energy",
+        "description": "Select your DTEK Kyiv power queue.",
+        "data": {
+          "name": "Name",
+          "queue": "Queue"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This queue is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today": {"name": "Today's schedule"},
+      "tomorrow": {"name": "Tomorrow's schedule"}
+    },
+    "binary_sensor": {
+      "outage_now": {"name": "Outage now"}
+    }
+  }
+}

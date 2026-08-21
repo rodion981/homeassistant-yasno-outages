@@ -1,6 +1,6 @@
 # ⚡️ Home Assistant — Alerts Energy Outages (Kyiv, черга 2.2)
 [![release](https://img.shields.io/github/v/release/rodion981/homeassistant-yasno-outages?display_name=tag&sort=semver)](https://github.com/rodion981/homeassistant-yasno-outages/releases)
-![hacs](https://img.shields.io/badge/hacs-default-blue)
+![hacs](https://img.shields.io/badge/HACS-Custom-orange)
 [![patreon](https://img.shields.io/badge/support-patreon-ff424d)](https://www.patreon.com/c/Rodion_Kurylenko)
 [![twitter](https://img.shields.io/badge/twitter-@rodionkurilenko-1DA1F2)](https://twitter.com/rodion_kr)
 
@@ -15,7 +15,18 @@
 
 > Працює через вбудовану REST-інтеграцію Home Assistant; HACS-залежності більше не потрібні.
 
-## 🔧 Встановлення
+## 🔧 Встановлення через HACS
+1. Відкрийте **HACS → Integrations → Custom repositories**.
+2. Додайте `https://github.com/rodion981/homeassistant-yasno-outages` з типом **Integration**.
+3. Встановіть **Alerts Energy Outages** і перезапустіть Home Assistant.
+4. Відкрийте **Settings → Devices & services → Add integration → Alerts Energy Outages** і оберіть чергу.
+
+Інтеграція створює сенсори графіка на сьогодні/завтра та бінарний сенсор «Відключення зараз». В атрибутах доступні сирі 24 коди та всі знайдені періоди.
+
+## 🧩 Legacy YAML-пакет
+
+Для старої схеми встановлення можна скопіювати файл пакету вручну:
+
 1. Скопіюйте файл пакету до вашого HA:
    ```yaml
    /config/includes/packages/energyua_22.yaml

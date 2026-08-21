@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alerts Energy",
+        "description": "Оберіть чергу ДТЕК Київські електромережі.",
+        "data": {
+          "name": "Назва",
+          "queue": "Черга"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Цю чергу вже налаштовано."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "today": {"name": "Графік на сьогодні"},
+      "tomorrow": {"name": "Графік на завтра"}
+    },
+    "binary_sensor": {
+      "outage_now": {"name": "Відключення зараз"}
+    }
+  }
+}
