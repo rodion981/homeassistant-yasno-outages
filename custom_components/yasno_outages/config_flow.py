@@ -8,7 +8,6 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
-from homeassistant.data_entry_flow import FlowResult
 
 from .const import CONF_OPERATOR, DEFAULT_OPERATOR, DEFAULT_QUEUE, DOMAIN
 
@@ -22,7 +21,7 @@ class AlertsEnergyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ):
         """Create an entry for a Kyiv DTEK queue."""
         if user_input is not None:
             queue = user_input["queue"]
